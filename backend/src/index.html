@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIDS Connection Test</title>
+</head>
+
+<body>
+
+<h1>Network Intrusion Detection System</h1>
+
+<button onclick="testConnection()">Test Backend Connection</button>
+
+<h3 id="connection"></h3>
+
+<hr>
+
+<textarea
+    id="features"
+    rows="12"
+    cols="120"
+    placeholder="Paste comma separated values here..."></textarea>
+
+<br><br>
+
+<button onclick="predict()">Predict</button>
+
+<h3 id="result"></h3>
+
+<script>
+
+async function testConnection() {
+
+    try {
+
+        const response = await fetch("http://127.0.0.1:8000/ping");
+        const data = await response.json();
+
+        document.getElementById("connection").innerHTML =
+            "✅ Backend Status: " + data.status;
+
+    } catch (error) {
+
+        document.getElementById("connection").innerHTML =
+            "❌ Backend Not Reachable";
+
+        console.error(error);
+    }
+
+}
+
+async function predict() {
+
+    alert("Predict button clicked");
+
+    const text = document.getElementById("features").value.trim();
+
+    alert("Textarea read");
+
+    const data = text
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => v !== "")
+        .map(v => {
+
+            if (v.toLowerCase() === "true") return true;
+            if (v.toLowerCase() === "false") return false;
+
+            return Number(v);
+
+        });
+
+    alert("Parsed " + data.length + " values");
+
+    console.log(data);
+
+    try {
+
+        alert("Sending request...");
+
+        const response = await fetch("http://127.0.0.1:8000/predict", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                data: data
+            })
+        });
+
+        alert("Response received");
+
+        const result = await response.json();
+
+        console.log(result);
+
+        document.getElementById("result").innerHTML =
+            JSON.stringify(result, null, 4);
+
+    } catch (e) {
+
+        alert(e);
+
+        console.error(e);
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
